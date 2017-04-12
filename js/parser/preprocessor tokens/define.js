@@ -46,6 +46,56 @@ function parse_define_arguments_list(parser)
 }
 
 
+function index_of_macro_argument(string, argument)
+{
+	var i=0
+	var concurence_count
+
+	while(i<string.length)
+	{
+		while(i<string.length && !is_letter(string[i]) && string[i] != '_')
+			++i
+
+		concurence_count = 0
+
+		while(i<string.length && (is_letter(string[i]) || string[i] != '_'))
+		{
+			if(concurence_count < string.length && string[i] == argument[concurence_count])
+				++concurence_count
+			else
+				break
+
+			++i
+		}
+
+		if(concurence_count == argument.length)
+			console.log(i)
+
+		while(i<string.length && (is_letter(string[i]) || string[i] == '_'))
+			++i
+	}
+}
+
+
+function calculate_define_pattern(identifer_arguments, macro)
+{
+	if(identifer_arguments === undefined)
+		return
+
+	var pattern = [macro]
+
+	for(var i=0; i<identifer_arguments.length; ++i)
+	{
+		var argument = identifer_arguments[i]
+
+		for(var j=0; j<pattern.length; j+=2)
+		{
+			index_of_macro_argument(macro, argument)
+		}
+	}
+}
+
+
 function parse_define(parser)
 {
 	var define_identifer = parser.parse_preprocessor_word()
@@ -59,9 +109,12 @@ function parse_define(parser)
 		console.log('define arguments ' + identifer_arguments)
 	}
 
+	var macro = parse_macro(parser)
+
 	parser.defines[ define_identifer ] = {
 		arguments: identifer_arguments,
-		macro:     parse_macro(parser)
+		macro:     macro,
+		pattern:   calculate_define_pattern(identifer_arguments, macro)
 	}
 
 	return 1

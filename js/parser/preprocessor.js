@@ -4,24 +4,6 @@ var preprocessor_tokens={
 }
 
 
-function replace_macro_arguments(parser, stream, macro)
-{
-	var result = ''
-
-	parser.skip()
-
-	if(parser.head() != '(')
-	{
-		console.log('missing (')
-		return
-	}
-
-	//read arguments from parser stream
-
-	return result
-}
-
-
 function execute_define_template(parser, stream)
 {
 	var defines_count = 0
@@ -53,6 +35,55 @@ function execute_define_template(parser, stream)
 		}
 
 		return word
+	}
+
+
+	function replace_macro_arguments(parser, stream, macro, identifer)
+	{
+		var result = ''
+
+		skip_spaces()
+
+		if(end_of_stream(stream) || stream.head != '(')
+		{
+			//console.log('missing (')
+			--defines_count
+			return identifer
+		}
+
+		read_stream_byte(stream)
+
+		//read arguments from parser stream
+
+		skip_spaces()
+
+		while(!end_of_stream(stream) && stream.head != ')')
+		{
+			var argument = ''
+
+			while(!end_of_stream(stream) && stream.head != ',' && stream.head != ')')
+			{
+				argument += stream.head
+				read_stream_byte(stream)
+			}
+
+			console.log(argument)
+
+			if(stream.head == ')')
+				break
+
+			read_stream_byte(stream)
+		}
+
+		if(stream.head != ')')
+		{
+			console.log('missing ) in macro')
+			return
+		}
+
+		read_stream_byte(stream)
+
+		return result
 	}
 
 
@@ -102,9 +133,9 @@ function execute_define_template(parser, stream)
 
 		if(macro.arguments !== undefined)
 		{
-			replace_macro_arguments(parser, stream, macro)
-			console.log('with arguments:)')
-			return
+			result += replace_macro_arguments(parser, stream, macro, identifer)
+			//console.log('with arguments:)')
+			continue
 		}
 
 		console.log(macro)
